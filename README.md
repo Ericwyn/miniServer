@@ -4,9 +4,17 @@
 ## 使用教程
  
     -p 设定静态服务器运行端口
+    
     -k [port number] 杀死特定端口上面的 miniServer
+    
     -kl 杀死所有正在运行的 miniServer 程序
-    -l 查看当前所有正在运行的 miniServer 
+    
+    -l 查看当前所有正在运行的 miniServer ,返回结果如下
+    
+           运行端口	        进程id           监听位置
+           20001		488		/home/ericwyn/模板/
+           20002		462		/home/ericwyn/公共的/
+           20003		499		/home/ericwyn/视频
 
 注意:杀死进程依赖于 bash 里 `kill` 命令和 `netstat` 命令
 
