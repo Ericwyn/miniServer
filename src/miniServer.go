@@ -20,7 +20,7 @@ var kPort = flag.Int("k", -1, "kill the miniServer running on this port \n杀死
 var killFlag = flag.Bool("kl", false, "kill the all running miniServer \n杀死所有的 miniServer 程序")
 var list = flag.Bool("l", false, "list the status of all running miniServer \n列出当前运行的所有 miniServer 程序")
 var dir = flag.String("d", "null", "the dir path the miniServer listen, default is current path \n设置http服务器鉴定目录，默认为当前目录")
-var ver = flag.Bool("v", false, "version message \n 版本信息查看")
+var ver = flag.Bool("v", false, "version message \n版本信息查看")
 
 var versionStr = "miniServer v1.1; author: @Ericwyn; github.com/Ericwyn/miniServer;"
 
