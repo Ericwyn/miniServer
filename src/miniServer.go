@@ -373,6 +373,6 @@ func killProcessWin(process Process) bool {
 
 func killAllProcessWin() {
 	for _, th := range getAllRunningWin() {
-		killProcess(th)
+		killProcessWin(th)
 	}
 }
