@@ -2,7 +2,9 @@
 为当前目录开启一个静态服务器
 
 ## 使用教程
- 
+
+### Linux 上面使用
+
     -p 设定静态服务器运行端口
     
     -k [port number] 杀死特定端口上面的 miniServer
@@ -20,7 +22,17 @@
 
 所以你可能需要安装 `net-tools` 
 
-并且 -p , -k , -kl , 功能也无法再 windows 系统上面使用
+### Windows 上面使用
+~~由于 net-tools 在 windows 上面存在使用上的差异， -p , -k , -kl , 功能也无法再 windows 系统上面使用~~
+
+已对windows进行了适配
+
+windows 上面使用 `netstat`, `tasklikt`, `tskill` 等命令来完成功能
+
+基础命令和 linux 上面的完全一样
+
+但是使用 `-l` 的时候无法查看具体的监听文件夹位置
+
 
 ## 日常用法
  - 调试本地的静态网站工程和本地 Javascript( Chrome 是不允许 js 直接通过 ajax 读取本地文件的, 但是使用静态服务器开启网站的时候就可以)
@@ -34,7 +46,7 @@
 
     go build miniServer.go
 
-就可以了，交叉编译的话在语句前面加上平台限定就好了，参考 Norcia.go 的编译 sh
+就可以了，交叉编译的话在语句前面加上平台限定就好了
  
 如果要方便的话就
     
