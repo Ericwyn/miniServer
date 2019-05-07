@@ -1,4 +1,4 @@
-# miniServer_GO
+# miniServer
 为当前目录开启一个静态服务器
 
 ## 使用教程
