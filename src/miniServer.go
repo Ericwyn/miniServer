@@ -280,7 +280,7 @@ func getAllRunningWin() []Process {
 	}
 	var resList []Process
 	for _, value := range taskMap {
-		if strings.Contains(value.Name, "miniServer.exe") {
+		if strings.Contains(value.Name, "miniServer.exe") && value.Port != "" {
 			resList = append(resList, value)
 		}
 	}
