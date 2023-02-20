@@ -2,8 +2,11 @@ package service
 
 import (
 	"fmt"
+	"github.com/Ericwyn/GoTools/file"
+	"github.com/Ericwyn/MiniServer/conf"
 	"github.com/Ericwyn/MiniServer/utils"
 	"github.com/shirou/gopsutil/v3/process"
+	"io"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -90,16 +93,78 @@ func Run(dirPath string, port string, ipAddrArr []string) {
 	} else {
 		dirPath = strings.Replace(dirPath, "\\", "/", -1)
 		//utils.RunInNewProcess(port, dirPath, ipAddrArr)
-		fmt.Println("监听:" + dirPath)
-		h := http.FileServer(http.Dir(dirPath))
-		ports := ":" + port
-		fmt.Println("服务启动在" + ports)
-		for _, ip := range ipAddrArr {
-			fmt.Println("http://" + ip + ports)
+		conf.RunDirPath = dirPath
+		startFileServer(port, dirPath, ipAddrArr)
+	}
+}
+
+func startFileServer(port string, dirPath string, ipAddrArr []string) {
+	fmt.Println("监听:" + dirPath)
+	//h := http.FileServer(http.Dir(dirPath))
+	fmt.Println("-----------------------------------")
+	fmt.Println("服务将启动在以下地址")
+	for _, ip := range ipAddrArr {
+		fmt.Println("http://" + ip + ":" + port)
+	}
+	fmt.Println("-----------------------------------")
+
+	http.HandleFunc("/", handler)
+	err := http.ListenAndServe(":"+port, nil)
+
+	//h := http.FileServer(http.Dir(dirPath))
+	//err := http.ListenAndServe(":"+port, h)
+	if err != nil {
+		if err != nil {
+			fmt.Println(err)
 		}
-		err2 := http.ListenAndServe(ports, h)
-		if err2 != nil {
-			log.Fatal("ListenAndServe: ", err2)
+		log.Fatal("文件服务器启动失败: ", err)
+	}
+}
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	// 获取参数
+	pathParam := r.URL.String()
+	if pathParam == "" || strings.Contains(pathParam, "./") {
+		pathParam = ""
+	}
+
+	filePath := conf.RunDirPath + pathParam
+	file := file.OpenFile(filePath)
+	if file.IsDir() {
+		// 返回 html
+		w.Header().Set("Content-Type", "text/html")
+		var fileMsgList []fileMsgVO
+		for _, f := range file.Children() {
+			vo := fileMsgVO{
+				FileName: f.Name(),
+				IsDir:    f.IsDir(),
+			}
+			if f.IsDir() {
+				vo.FileSize = "文件夹"
+			} else {
+				vo.FileSize = fmt.Sprint(f.Size())
+			}
+			fileMsgList = append(fileMsgList, vo)
 		}
+		html := renderHtml(fileMsgList)
+
+		io.WriteString(w, html)
+	} else if file.IsFile() {
+		openFile, err := file.Open()
+		if err != nil {
+			return
+		}
+		defer openFile.Close()
+
+		// 获取文件信息
+		fileInfo, err := openFile.Stat()
+		if err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		// 设置响应头
+		//w.Header().Set("Content-Disposition", "attachment; filename="+file.Name())
+		http.ServeContent(w, r, fileInfo.Name(), fileInfo.ModTime(), openFile)
 	}
 }

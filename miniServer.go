@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/Ericwyn/MiniServer/conf"
 	"github.com/Ericwyn/MiniServer/service"
 	"github.com/Ericwyn/MiniServer/utils"
 	"os"
@@ -15,20 +16,11 @@ var list = flag.Bool("l", false, "list the status of cross running miniServer \n
 var dir = flag.String("d", "null", "the dir path the miniServer listen, default is current path \n设置http服务器鉴定目录，默认为当前目录")
 var ver = flag.Bool("v", false, "version message \n版本信息查看")
 
-var logo = "              _       _ _____                          \n" +
-	"   ____ ___  (_)___  (_) ___/___  ______   _____  _____\n" +
-	"  / __ `__ \\/ / __ \\/ /\\__ \\/ _ \\/ ___/ | / / _ \\/ ___/\n" +
-	" / / / / / / / / / / /___/ /  __/ /   | |/ /  __/ /    \n" +
-	"/_/ /_/ /_/_/_/ /_/_//____/\\___/_/    |___/\\___/_/     \n\n"
-var versionStr = logo +
-	"                v1.2 - 2023.02.20 \n" +
-	"   @Ericwyn https://github.com/Ericwyn/miniServer\n"
-
 func main() {
 	flag.Parse()
 
 	if *ver {
-		fmt.Println(versionStr)
+		fmt.Println(conf.VersionStr)
 		os.Exit(0)
 	}
 
@@ -52,7 +44,7 @@ func main() {
 			fmt.Println(thread.Port + "\t\t" + thread.Pid + "\t\t" + thread.DirPath)
 		}
 	} else {
-		fmt.Println(versionStr)
+		fmt.Println(conf.VersionStr)
 		cmd.Run(*dir, *port, ipAddrArr)
 	}
 }
