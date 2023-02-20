@@ -9,43 +9,32 @@
                                                        
 ```
 
-
-
 为当前目录或特定目录开启一个静态 http 服务器
 
 ## 使用教程
 
-### Linux 上面使用
-    
-    -v 查看版本信息
-    
-    -p 设定静态服务器运行端口
-    
-    -k [port number] 杀死特定端口上面的 miniServer
-    
-    -kl 杀死所有正在运行的 miniServer 程序
-    
-    -l 查看当前所有正在运行的 miniServer ,返回结果如下
-    
-           运行端口	        进程id           监听位置
-           20001		488		/home/ericwyn/模板/
-           20002		462		/home/ericwyn/公共的/
-           20003		499		/home/ericwyn/视频
+### 基本参数
+V1.2 版本之后目前所有命令参数都支持 linux / windows
+
+```shell
+  -d string
+        the dir path the miniServer listen, default is current path
+        设置http服务器鉴定目录，默认为当前目录 (default "null")
+  -kl
+        kill the cross running miniServer
+        杀死所有的 miniServer 程序
+  -l    list the status of cross running miniServer
+        列出当前运行的所有 miniServer 程序
+  -p string
+        http listen port
+        设置 http 服务器运行端口 (default "10010")
+  -v    version message
+        版本信息查看
+```
 
 注意:杀死进程依赖于 bash 里 `kill` 命令和 `netstat` 命令
 
 所以你可能需要安装 `net-tools` 
-
-### Windows 上面使用
-~~由于 net-tools 在 windows 上面存在使用上的差异， -p , -k , -kl , 功能也无法再 windows 系统上面使用~~
-
-已对windows进行了适配
-
-windows 上面使用 `netstat`, `tasklikt`, `tskill` 等命令来完成功能
-
-基础命令和 linux 上面的完全一样
-
-但是使用 `-l` 的时候无法查看具体的监听文件夹位置
 
 
 ## 日常用法
