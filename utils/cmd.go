@@ -31,8 +31,9 @@ func RunInNewProcess(port string, dirPath string, ipAddrArr []string) {
 	}
 	cmd = exec.Command(GetBinPath()+"/miniServer", "-d", dirPath, "-p", port, "trueRun")
 
-	_, err := cmd.Output()
+	byte, err := cmd.Output()
 	if err != nil {
 		fmt.Println("创建新线程失败或遭退出, :", err)
 	}
+	fmt.Println(string(byte))
 }
