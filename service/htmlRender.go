@@ -32,15 +32,17 @@ func renderHtml(fileMsgList []fileMsgVO) string {
 <head>
     <meta charset="utf-8">
     <title id="title"> MiniServer </title>
-    <style>
-        h1 {
-            font-size: 46px
-        }
-    </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"/>
+    <meta name="renderer" content="webkit"/>
+    <meta name="force-rendering" content="webkit"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="referrer" content="never">
 </head>
 
 <body>
 <pre>` + conf.VersionStr + `</pre>
+<br>
 <table style="font-size:24px">
     <thead>
     <tr class="header" id="theader">

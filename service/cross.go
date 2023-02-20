@@ -130,6 +130,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	filePath := conf.RunDirPath + pathParam
 	file := file.OpenFile(filePath)
+	if !file.Exits() {
+		fmt.Fprintf(w, "404 error")
+		return
+	}
+
 	if file.IsDir() {
 		// 返回 html
 		w.Header().Set("Content-Type", "text/html")
