@@ -1,5 +1,9 @@
 package service
 
+import (
+	"github.com/shirou/gopsutil/v3/process"
+)
+
 type MiniServerCmd struct {
 	SystemName  string // 系统名称
 	KillPortFun func(port int) bool
@@ -13,4 +17,5 @@ type Process struct {
 	Pid     string
 	DirPath string
 	Name    string
+	Process *process.Process
 }

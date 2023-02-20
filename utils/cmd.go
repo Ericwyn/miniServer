@@ -24,20 +24,13 @@ func CmdRun(name string, arg string) string {
 
 func RunInNewProcess(port string, dirPath string, ipAddrArr []string) {
 	var cmd *exec.Cmd
-	if port != "10010" {
-		fmt.Println("使用命令:\n\t", GetBinPath()+"/miniServer", "-d", dirPath, "-p", port, "\n创建新进程")
-		for _, ip := range ipAddrArr {
-			fmt.Println("服务启动在 ", "http://"+ip+":"+port)
-		}
-		cmd = exec.Command(GetBinPath()+"/miniServer", "-d", dirPath, "-p", port)
-	} else {
-		fmt.Println("使用命令:\n\t", GetBinPath()+"/miniServer", "-d", dirPath, "\n创建新进程")
-		fmt.Println("服务运行在: 10010 端口")
-		for _, ip := range ipAddrArr {
-			fmt.Println("http://" + ip + ":10010")
-		}
-		cmd = exec.Command(GetBinPath()+"/miniServer", "-d", dirPath)
+
+	fmt.Println("使用命令:\n\t", GetBinPath()+"/miniServer", "-d", dirPath, "-p", port, "\n创建新进程")
+	for _, ip := range ipAddrArr {
+		fmt.Println("服务启动在 ", "http://"+ip+":"+port)
 	}
+	cmd = exec.Command(GetBinPath()+"/miniServer", "-d", dirPath, "-p", port, "trueRun")
+
 	_, err := cmd.Output()
 	if err != nil {
 		fmt.Println("创建新线程失败或遭退出, :", err)
