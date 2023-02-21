@@ -38,16 +38,19 @@ func renderHtml(fileMsgList []fileMsgVO) string {
     <meta name="force-rendering" content="webkit"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
     <meta name="referrer" content="never">
+	<style>
+
+	</style>
 </head>
 
 <body>
-<pre>` + conf.VersionStr + `</pre>
+<pre style="font-size:16px">` + conf.VersionStr + `</pre>
 <br>
-<table style="font-size:24px">
+<table style="font-size:20px; text-align: left;">
     <thead>
     <tr class="header" id="theader">
-        <th>名称</th>
-        <th>大小</th>
+        <th>&nbsp;&nbsp;名称</th>
+        <th>&nbsp;&nbsp;大小</th>
     </tr>
     </thead>
     <tbody id="list">
@@ -58,6 +61,17 @@ func renderHtml(fileMsgList []fileMsgVO) string {
     </tr>
     ` + renderMsg(fileMsgList) + `
 </table>
+<br>
+<br>
+<br>
+<footer style="text-align: left">
+    <span>
+		&nbsp;&nbsp;Run By
+		<a href="https://github.com/Ericwyn/miniServer" target="_blank" rel="nofollow noopener">
+		MiniServer
+		</a>
+    </span>
+</footer>
 </body>
 <script>
     var list = document.getElementsByClassName("next");
