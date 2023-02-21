@@ -11,6 +11,11 @@
 
 为当前目录或特定目录开启一个静态 http 服务器
 
+简单实现的一个小玩意儿，这些年帮了我很多忙~
+
+![screenshot](screenshot/screenshot.png)
+
+
 ## 使用教程
 
 ### 基本参数
