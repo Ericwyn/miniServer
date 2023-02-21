@@ -6,7 +6,8 @@ var Logo = "              _       _ _____                          \n" +
 	" / / / / / / / / / / /___/ /  __/ /   | |/ /  __/ /    \n" +
 	"/_/ /_/ /_/_/_/ /_/_//____/\\___/_/    |___/\\___/_/     \n\n"
 var VersionStr = Logo +
-	"                v2.0 - 2023.02.20 \n" +
+	"                v2.0 - 2023.02.20 \n"
+var VersionAndAutherStr = VersionStr +
 	"   @Ericwyn https://github.com/Ericwyn/miniServer\n"
 
 var RunDirPath string

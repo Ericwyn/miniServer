@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -138,7 +139,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if file.IsDir() {
 		// 返回 html
 		w.Header().Set("Content-Type", "text/html")
-		var fileMsgList []fileMsgVO
+		var fileList []fileMsgVO
+		var dirList []fileMsgVO
 		for _, f := range file.Children() {
 			vo := fileMsgVO{
 				FileName: f.Name(),
@@ -146,12 +148,21 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			}
 			if f.IsDir() {
 				vo.FileSize = "文件夹"
+				dirList = append(dirList, vo)
 			} else {
-				vo.FileSize = fmt.Sprint(f.Size())
+				vo.FileSize = utils.HumanizeFileSize(f.Size())
+				fileList = append(fileList, vo)
 			}
-			fileMsgList = append(fileMsgList, vo)
 		}
-		html := renderHtml(fileMsgList)
+
+		sort.Slice(fileList, func(i, j int) bool {
+			return strings.Compare(fileList[i].FileName, fileList[j].FileName) < 0
+		})
+		sort.Slice(dirList, func(i, j int) bool {
+			return strings.Compare(dirList[i].FileName, dirList[j].FileName) < 0
+		})
+		dirList = append(dirList, fileList...)
+		html := renderHtml(dirList)
 
 		io.WriteString(w, html)
 	} else if file.IsFile() {

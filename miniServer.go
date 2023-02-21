@@ -20,7 +20,7 @@ func main() {
 	flag.Parse()
 
 	if *ver {
-		fmt.Println(conf.VersionStr)
+		fmt.Println(conf.VersionAndAutherStr)
 		os.Exit(0)
 	}
 
@@ -44,7 +44,7 @@ func main() {
 			fmt.Println(thread.Port + "\t\t" + thread.Pid + "\t\t" + thread.DirPath)
 		}
 	} else {
-		fmt.Println(conf.VersionStr)
+		fmt.Println(conf.VersionAndAutherStr)
 		cmd.Run(*dir, *port, ipAddrArr)
 	}
 }
