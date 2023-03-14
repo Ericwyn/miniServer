@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -128,6 +129,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if pathParam == "" || strings.Contains(pathParam, "./") {
 		pathParam = ""
 	}
+
+	pathParam, _ = url.QueryUnescape(pathParam)
 
 	filePath := conf.RunDirPath + pathParam
 	file := file.OpenFile(filePath)
