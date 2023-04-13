@@ -131,6 +131,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pathParam, _ = url.QueryUnescape(pathParam)
+	pathParam = strings.Split(pathParam, "?")[0]
 
 	filePath := conf.RunDirPath + pathParam
 	file := file.OpenFile(filePath)
