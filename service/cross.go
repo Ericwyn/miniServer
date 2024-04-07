@@ -2,7 +2,7 @@ package service
 
 import (
 	"fmt"
-	"github.com/Ericwyn/GoTools/file"
+	oopFile "github.com/Ericwyn/GoTools/file"
 	"github.com/Ericwyn/MiniServer/conf"
 	"github.com/Ericwyn/MiniServer/utils"
 	"github.com/shirou/gopsutil/v3/process"
@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -134,18 +135,18 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	pathParam = strings.Split(pathParam, "?")[0]
 
 	filePath := conf.RunDirPath + pathParam
-	file := file.OpenFile(filePath)
-	if !file.Exits() {
+	oopfile := oopFile.OpenFile(filePath)
+	if !oopfile.Exits() {
 		fmt.Fprintf(w, "404 error")
 		return
 	}
 
-	if file.IsDir() {
+	if oopfile.IsDir() {
 		// 返回 html
 		w.Header().Set("Content-Type", "text/html")
 		var fileList []fileMsgVO
 		var dirList []fileMsgVO
-		for _, f := range file.Children() {
+		for _, f := range oopfile.Children() {
 			vo := fileMsgVO{
 				FileName: f.Name(),
 				IsDir:    f.IsDir(),
@@ -169,22 +170,20 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		html := renderHtml(dirList)
 
 		io.WriteString(w, html)
-	} else if file.IsFile() {
-		openFile, err := file.Open()
+	} else if oopfile.IsFile() {
+		sysFile, err := os.Open(oopfile.AbsPath())
 		if err != nil {
+			http.Error(w, "Internal server error, file open error", http.StatusInternalServerError)
 			return
 		}
-		defer openFile.Close()
-
-		// 获取文件信息
-		fileInfo, err := openFile.Stat()
+		fileInfo, err := sysFile.Stat()
 		if err != nil {
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			http.Error(w, "Internal server error, get file msg error", http.StatusInternalServerError)
 			return
 		}
 
 		// 设置响应头
-		//w.Header().Set("Content-Disposition", "attachment; filename="+file.Name())
-		http.ServeContent(w, r, fileInfo.Name(), fileInfo.ModTime(), openFile)
+		//w.Header().Set("Content-Disposition", "attachment; filename="+oopfile.Name())
+		http.ServeContent(w, r, fileInfo.Name(), fileInfo.ModTime(), sysFile)
 	}
 }
