@@ -150,6 +150,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			vo := fileMsgVO{
 				FileName: f.Name(),
 				IsDir:    f.IsDir(),
+				LastMod:  f.ModTime().Format("2006-01-02 15:04"),
 			}
 			if f.IsDir() {
 				vo.FileSize = "文件夹"

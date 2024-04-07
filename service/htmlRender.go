@@ -6,6 +6,7 @@ type fileMsgVO struct {
 	FileName string
 	FileSize string
 	IsDir    bool
+	LastMod  string // 最后修改时间
 }
 
 func renderMsg(fileMsgList []fileMsgVO) string {
@@ -14,6 +15,9 @@ func renderMsg(fileMsgList []fileMsgVO) string {
 		resStr += "    <tr>\n" +
 			"        <td>\n" +
 			"            &nbsp;&nbsp;<a href=\"\" class=\"next\">" + vo.FileName + "</a>&nbsp;&nbsp;&nbsp;&nbsp;\n" +
+			"        </td>\n" +
+			"        <td>\n" +
+			"            &nbsp; " + vo.LastMod + " &nbsp;\n" +
 			"        </td>\n" +
 			"        <td>\n" +
 			"            &nbsp; " + vo.FileSize + " &nbsp;\n" +
@@ -50,6 +54,7 @@ func renderHtml(fileMsgList []fileMsgVO) string {
     <thead>
     <tr class="header" id="theader">
         <th>&nbsp;&nbsp;名称</th>
+        <th>&nbsp;&nbsp;时间</th>
         <th>&nbsp;&nbsp;大小</th>
     </tr>
     </thead>
@@ -91,6 +96,22 @@ func renderHtml(fileMsgList []fileMsgVO) string {
         document.getElementById("back").href = href.substr(0, href.length - temp[temp.length - 1].length);
         document.getElementById("goback").style.display = "inline";
     }
+
+	function sharePage() {
+		if (navigator.share) {
+			navigator.share({
+				title: document.title,
+				url: window.location.href
+			}).then(() => {
+				console.log('Thanks for sharing!');
+			})
+			.catch(console.error);
+		} else {
+			// 处理不支持 Web Share API 的情况
+			console.log('Web Share API is not supported in your browser.');
+		}
+	}
+
 </script>
 </html>
 `
