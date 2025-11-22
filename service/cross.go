@@ -177,6 +177,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal server error, file open error", http.StatusInternalServerError)
 			return
 		}
+		defer sysFile.Close() // 确保文件在函数结束时关闭
+
 		fileInfo, err := sysFile.Stat()
 		if err != nil {
 			http.Error(w, "Internal server error, get file msg error", http.StatusInternalServerError)
