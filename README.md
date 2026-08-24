@@ -13,13 +13,13 @@
 
 简单实现的一个小玩意儿，这些年帮了我很多忙~
 
-当前测试版本：`v3.0.0.beta`（需要 Go `1.22.5` 或更高版本构建）
+当前版本：`v3.0.0`（需要 Go `1.22.5` 或更高版本构建）
 
 
 ## 使用教程
 
 ### 基本参数
-V1.2 版本之后目前所有命令参数都支持 linux / windows
+V3.0 版本目前所有命令参数都支持 Linux / Windows / macOS
 
 ```shell
   -d string
@@ -88,3 +88,7 @@ aria2c -c -x 8 -s 8 -k 1M http://127.0.0.1:10010/path/to/large-file.bin
     sudo cp miniServer /usr/bin
 
 这样就直接变成一个 bash 命令了
+
+## 自动构建
+
+代码每次 push 到 GitHub 后，GitHub Actions 会先运行测试，再交叉编译 Linux、Windows 和 macOS 的 `amd64` 可执行文件。三个平台产物会分别打包成 ZIP，并在当次 Actions 运行页面保留 30 天。发布 GitHub Release 时，工作流会从对应 Tag 重新构建，并自动将三个 ZIP 上传到 Release Assets。工作流也支持在 GitHub 页面手动触发。

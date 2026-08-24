@@ -429,7 +429,7 @@ func TestEmbeddedResponsiveDirectoryFrontend(t *testing.T) {
 	}
 
 	wantFragments := []string{
-		"v3.0.0.beta",
+		"v3.0.0",
 		`class="page-shell"`,
 		`class="directory-header"`,
 		`id="file-search"`,

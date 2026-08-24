@@ -1,0 +1,112 @@
+name: Build
+
+on:
+  push:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run tests
+        run: go test ./...
+
+  build:
+    name: Build ${{ matrix.label }}
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Linux amd64
+            goos: linux
+            goarch: amd64
+            binary: miniServer
+            package: miniServer-linux-amd64
+          - label: Windows amd64
+            goos: windows
+            goarch: amd64
+            binary: miniServer.exe
+            package: miniServer-windows-amd64
+          - label: macOS amd64
+            goos: darwin
+            goarch: amd64
+            binary: miniServer
+            package: miniServer-darwin-amd64
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build executable
+        env:
+          CGO_ENABLED: "0"
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          BINARY_NAME: ${{ matrix.binary }}
+          PACKAGE_NAME: ${{ matrix.package }}
+        run: |
+          mkdir -p "dist/${PACKAGE_NAME}"
+          go build -trimpath -ldflags="-s -w" -o "dist/${PACKAGE_NAME}/${BINARY_NAME}" .
+
+      - name: Package ZIP
+        env:
+          BINARY_NAME: ${{ matrix.binary }}
+          PACKAGE_NAME: ${{ matrix.package }}
+        run: |
+          cd "dist/${PACKAGE_NAME}"
+          zip -9 "../${PACKAGE_NAME}.zip" "${BINARY_NAME}"
+
+      - name: Upload ZIP
+        uses: actions/upload-artifact@v7
+        with:
+          path: dist/${{ matrix.package }}.zip
+          archive: false
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    name: Attach ZIPs to release
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - name: Download ZIPs
+        uses: actions/download-artifact@v8
+        with:
+          pattern: miniServer-*.zip
+          path: dist
+          merge-multiple: true
+          skip-decompress: true
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "${RELEASE_TAG}" dist/*.zip --clobber
