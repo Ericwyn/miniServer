@@ -1,120 +1,61 @@
 package service
 
-import "github.com/Ericwyn/MiniServer/conf"
+import (
+	"bytes"
+	"html/template"
+
+	"github.com/Ericwyn/MiniServer/conf"
+	webassets "github.com/Ericwyn/MiniServer/web"
+)
 
 type fileMsgVO struct {
-	FileName string
-	FileSize string
-	IsDir    bool
-	LastMod  string // 最后修改时间
+	FileName    string
+	FileSize    string
+	Href        string
+	Category    string
+	TypeLabel   string
+	LastMod     string
+	ModISO      string
+	RawSize     int64
+	ModUnix     int64
+	IsDir       bool
+	Previewable bool
 }
 
-func renderMsg(fileMsgList []fileMsgVO) string {
-	resStr := ""
-	for _, vo := range fileMsgList {
-		resStr += "    <tr>\n" +
-			"        <td>\n" +
-			"            &nbsp;&nbsp;<a href=\"\" class=\"next\">" + vo.FileName + "</a>&nbsp;&nbsp;&nbsp;&nbsp;\n" +
-			"        </td>\n" +
-			"        <td>\n" +
-			"            &nbsp; " + vo.LastMod + " &nbsp;\n" +
-			"        </td>\n" +
-			"        <td>\n" +
-			"            &nbsp; " + vo.FileSize + " &nbsp;\n" +
-			"        </td>\n" +
-			"    </tr>"
-	}
-
-	return resStr
+type breadcrumbVO struct {
+	Name    string
+	Href    string
+	Current bool
 }
 
-func renderHtml(fileMsgList []fileMsgVO) string {
-	html := `
-<!DOCTYPE html>
-<html lang="zh">
+type directoryPage struct {
+	Version     string
+	CurrentPath string
+	TotalSize   string
+	Files       []fileMsgVO
+	Breadcrumbs []breadcrumbVO
+	ItemCount   int
+	FileCount   int
+	DirCount    int
+	HasParent   bool
+	Styles      template.CSS
+	Script      template.JS
+}
 
-<head>
-    <meta charset="utf-8">
-    <title id="title"> MiniServer </title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"/>
-    <meta name="renderer" content="webkit"/>
-    <meta name="force-rendering" content="webkit"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-    <meta name="referrer" content="never">
-	<style>
+var directoryTemplate = template.Must(
+	template.New("directory").Parse(string(webassets.DirectoryTemplate)),
+)
 
-	</style>
-</head>
+func renderHtml(page directoryPage) (string, error) {
+	// These are trusted, compile-time resources. Dynamic file data continues to
+	// be escaped by html/template before it is inserted into the page.
+	page.Version = conf.VersionNum
+	page.Styles = template.CSS(string(webassets.DirectoryStyles))
+	page.Script = template.JS(string(webassets.DirectoryScript))
 
-<body>
-<pre style="font-size:16px">` + conf.VersionStr + `</pre>
-<br>
-<table style="font-size:20px; text-align: left;">
-    <thead>
-    <tr class="header" id="theader">
-        <th>&nbsp;&nbsp;名称</th>
-        <th>&nbsp;&nbsp;时间</th>
-        <th>&nbsp;&nbsp;大小</th>
-    </tr>
-    </thead>
-    <tbody id="list">
-    <tr id="goback" style="display: none">
-        <td>
-            &nbsp;&nbsp;<a href="" id="back">返回上层目录</a>&nbsp;&nbsp;&nbsp;&nbsp;
-        </td>
-    </tr>
-    ` + renderMsg(fileMsgList) + `
-</table>
-<br>
-<br>
-<br>
-<footer style="text-align: left">
-    <span>
-		&nbsp;&nbsp;Run By
-		<a href="https://github.com/Ericwyn/miniServer" target="_blank" rel="nofollow noopener">
-		MiniServer
-		</a>
-    </span>
-</footer>
-</body>
-<script>
-    var list = document.getElementsByClassName("next");
-    for (var i = 0; i < list.length; i++) {
-        if (window.location.pathname !== "/") {
-            list[i].href = (window.location.pathname + "/" + list[i].text).replace("//", "/");
-        } else {
-            list[i].href = list[i].text;
-        }
-    }
-    if (window.location.pathname !== "/") {
-        var href = window.location.href;
-        if (href.endsWith("/")) {
-            href = href.substr(0, href.length - 1);
-        }
-        var temp = href.split("/");
-        document.getElementById("back").href = href.substr(0, href.length - temp[temp.length - 1].length);
-        document.getElementById("goback").style.display = "inline";
-    }
-
-	function sharePage() {
-		if (navigator.share) {
-			navigator.share({
-				title: document.title,
-				url: window.location.href
-			}).then(() => {
-				console.log('Thanks for sharing!');
-			})
-			.catch(console.error);
-		} else {
-			// 处理不支持 Web Share API 的情况
-			console.log('Web Share API is not supported in your browser.');
-		}
+	var output bytes.Buffer
+	if err := directoryTemplate.Execute(&output, page); err != nil {
+		return "", err
 	}
-
-</script>
-</html>
-`
-
-	return html
+	return output.String(), nil
 }

@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" id="theme-color" content="#f1eee5">
+    <meta name="referrer" content="no-referrer">
+    <title>{{.CurrentPath}} · MiniServer</title>
+    <style>{{.Styles}}</style>
+</head>
+<body>
+<div class="page-shell">
+    <header class="topbar">
+        <a class="brand" href="/" aria-label="返回 MiniServer 根目录">
+            <span class="brand-mark" aria-hidden="true">M<span>/</span>S</span>
+            <span class="brand-copy">
+                <strong>MiniServer</strong>
+                <small>{{.Version}}</small>
+            </span>
+        </a>
+        <div class="topbar-actions">
+            <span class="status-pill"><i aria-hidden="true"></i>服务运行中</span>
+            <button class="icon-button" id="theme-toggle" type="button" aria-label="切换深浅色主题" title="切换主题">
+                <svg class="sun-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"></path></svg>
+                <svg class="moon-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.5A8.5 8.5 0 0 1 8.5 3.8 8.5 8.5 0 1 0 20.2 15.5Z"></path></svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="browser-panel" aria-labelledby="browser-title">
+            <header class="directory-header">
+                <div class="directory-heading">
+                    <p class="directory-label"><i aria-hidden="true"></i>共享目录</p>
+                    <h1 id="browser-title">{{if .HasParent}}{{.CurrentPath}}{{else}}文件{{end}}</h1>
+                    <nav class="breadcrumbs" aria-label="当前目录路径">
+                        {{range .Breadcrumbs}}
+                        {{if .Current}}
+                        <span class="breadcrumb-current" aria-current="page">{{.Name}}</span>
+                        {{else}}
+                        <a href="{{.Href}}">{{.Name}}</a><span class="breadcrumb-separator" aria-hidden="true">/</span>
+                        {{end}}
+                        {{end}}
+                    </nav>
+                </div>
+                <div class="directory-meta" aria-label="当前目录统计">
+                    <span><strong>{{.FileCount}}</strong> 文件</span>
+                    <span><strong>{{.DirCount}}</strong> 文件夹</span>
+                    <span><strong>{{.TotalSize}}</strong></span>
+                </div>
+            </header>
+
+            <div class="browser-toolbar">
+                <label class="search-control" for="file-search">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+                    <span class="visually-hidden">搜索当前目录</span>
+                    <input id="file-search" type="search" placeholder="搜索文件…" autocomplete="off" spellcheck="false">
+                    <kbd aria-hidden="true">/</kbd>
+                </label>
+                <div class="toolbar-actions">
+                    <label class="sort-control" for="file-sort">
+                        <span>排序</span>
+                        <select id="file-sort">
+                            <option value="name">名称</option>
+                            <option value="time">时间</option>
+                            <option value="size">大小</option>
+                            <option value="type">类型</option>
+                        </select>
+                        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 8 4 4 4-4"></path></svg>
+                    </label>
+                    <button class="copy-button" id="copy-link" type="button" aria-label="复制当前目录地址">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>
+                        <span id="copy-label">复制地址</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="result-line">
+                <span><strong id="result-count" aria-live="polite">{{.ItemCount}}</strong> 个项目</span>
+                <span class="range-note"><i aria-hidden="true"></i>支持多线程与断点续传</span>
+            </div>
+
+            {{if .HasParent}}
+            <a class="parent-row" href="../">
+                <span class="parent-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg>
+                </span>
+                <span><strong>返回上层目录</strong><small>..</small></span>
+                <span class="row-action">返回</span>
+            </a>
+            {{end}}
+
+            {{if .Files}}
+            <div class="file-header" aria-hidden="true">
+                <span>名称</span><span>修改时间</span><span>大小</span><span></span>
+            </div>
+            <div class="file-list" id="file-list">
+                {{range .Files}}
+                <a class="file-row" href="{{.Href}}" data-name="{{.FileName}}" data-kind="{{if .IsDir}}dir{{else}}file{{end}}" data-size="{{.RawSize}}" data-display-size="{{.FileSize}}" data-time="{{.ModUnix}}" data-type="{{.TypeLabel}}" data-previewable="{{.Previewable}}" aria-label="{{if .IsDir}}打开文件夹{{else if .Previewable}}预览文本文件{{else}}打开文件{{end}}：{{.FileName}}">
+                    <span class="file-primary">
+                        <span class="file-mark file-mark-{{.Category}}" aria-hidden="true">
+                            {{if .IsDir}}
+                            <svg viewBox="0 0 24 24"><path d="M3.5 7.5h6l2-2h9a1.5 1.5 0 0 1 1.5 1.5v11.5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-9a2 2 0 0 1 1.5-2Z"></path></svg>
+                            {{else}}
+                            <svg viewBox="0 0 24 24"><path d="M6 2.5h8l4 4V21H6z"></path><path d="M14 2.5V7h4"></path></svg>
+                            {{end}}
+                        </span>
+                        <span class="file-name-block">
+                            <strong>{{.FileName}}</strong>
+                            <small>{{.TypeLabel}}</small>
+                        </span>
+                    </span>
+                    <time datetime="{{.ModISO}}" data-label="修改时间">{{.LastMod}}</time>
+                    <span class="file-size" data-label="大小">{{.FileSize}}</span>
+                    <span class="row-action">{{if .IsDir}}进入{{else if .Previewable}}预览{{else}}打开{{end}}<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 6l4 4-4 4"></path></svg></span>
+                </a>
+                {{end}}
+            </div>
+            <div class="empty-state search-empty" id="search-empty" role="status" hidden>
+                <span class="empty-glyph" aria-hidden="true">∅</span>
+                <h2>没有匹配项目</h2>
+                <p>换一个关键词，或者清空搜索条件。</p>
+            </div>
+            {{else}}
+            <div class="empty-state">
+                <span class="empty-glyph" aria-hidden="true">00</span>
+                <h2>这个目录还是空的</h2>
+                <p>把文件放进共享目录，它们会立即出现在这里。</p>
+            </div>
+            {{end}}
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>MiniServer <span>{{.Version}}</span></p>
+        <a href="https://github.com/Ericwyn/miniServer" target="_blank" rel="nofollow noopener noreferrer">GitHub ↗</a>
+    </footer>
+</div>
+
+<dialog class="preview-dialog" id="preview-dialog" aria-labelledby="preview-title" aria-describedby="preview-status">
+    <div class="preview-shell">
+        <header class="preview-header">
+            <div class="preview-heading">
+                <span class="preview-file-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M6 2.5h8l4 4V21H6z"></path><path d="M14 2.5V7h4M9 12h6M9 16h6"></path></svg>
+                </span>
+                <div>
+                    <p>文本预览</p>
+                    <h2 id="preview-title">读取文件</h2>
+                    <span id="preview-status" aria-live="polite">准备中</span>
+                </div>
+            </div>
+            <div class="preview-header-actions">
+                <button class="preview-copy-button" id="preview-copy" type="button" aria-label="复制预览全文" disabled>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>
+                    <span id="preview-copy-label">复制全文</span>
+                </button>
+                <button class="preview-close-button" id="preview-close" type="button" aria-label="关闭文本预览">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="preview-notice" id="preview-notice" role="status" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v5M12 17h.01"></path><circle cx="12" cy="12" r="9"></circle></svg>
+            <span>文件内容较长，仅展示前 2000 行。</span>
+        </div>
+
+        <div class="preview-body" id="preview-body" aria-busy="false">
+            <pre><code id="preview-content">正在读取文件…</code></pre>
+        </div>
+
+        <footer class="preview-footer">
+            <span>UTF-8 · 最多 2000 行 / 4 MiB</span>
+            <div>
+                <a class="preview-link-button" id="preview-open" href="#" target="_blank" rel="noopener noreferrer">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5h5v5M19 5l-8 8"></path><path d="M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"></path></svg>
+                    跳转链接
+                </a>
+                <a class="preview-download-button" id="preview-download" href="#" download>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 20h14"></path></svg>
+                    直接下载
+                </a>
+            </div>
+        </footer>
+    </div>
+</dialog>
+
+<noscript><div class="noscript-note">JavaScript 已关闭；文件浏览与下载仍可正常使用。</div></noscript>
+<script>{{.Script}}</script>
+</body>
+</html>

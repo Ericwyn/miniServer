@@ -1,11 +1,8 @@
 module github.com/Ericwyn/MiniServer
 
-go 1.19
+go 1.22.5
 
-require (
-	github.com/Ericwyn/GoTools v0.0.0-20220613150133-88bc07e04e5f
-	github.com/shirou/gopsutil/v3 v3.23.1
-)
+require github.com/shirou/gopsutil/v3 v3.23.1
 
 require (
 	github.com/go-ole/go-ole v1.2.6 // indirect

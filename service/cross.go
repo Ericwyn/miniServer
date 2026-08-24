@@ -2,18 +2,14 @@ package service
 
 import (
 	"fmt"
-	oopFile "github.com/Ericwyn/GoTools/file"
+	"log"
+	"net/http"
+	"path/filepath"
+	"strings"
+
 	"github.com/Ericwyn/MiniServer/conf"
 	"github.com/Ericwyn/MiniServer/utils"
 	"github.com/shirou/gopsutil/v3/process"
-	"io"
-	"log"
-	"net/http"
-	"net/url"
-	"os"
-	"path/filepath"
-	"sort"
-	"strings"
 )
 
 // 跨平台公有实现
@@ -103,7 +99,6 @@ func Run(dirPath string, port string, ipAddrArr []string) {
 
 func startFileServer(port string, dirPath string, ipAddrArr []string) {
 	fmt.Println("监听:" + dirPath)
-	//h := http.FileServer(http.Dir(dirPath))
 	fmt.Println("-----------------------------------")
 	fmt.Println("服务将启动在以下地址")
 	for _, ip := range ipAddrArr {
@@ -111,82 +106,13 @@ func startFileServer(port string, dirPath string, ipAddrArr []string) {
 	}
 	fmt.Println("-----------------------------------")
 
-	http.HandleFunc("/", handler)
-	err := http.ListenAndServe(":"+port, nil)
-
-	//h := http.FileServer(http.Dir(dirPath))
-	//err := http.ListenAndServe(":"+port, h)
+	handler, err := newFileServerHandler(dirPath)
 	if err != nil {
-		if err != nil {
-			fmt.Println(err)
-		}
+		log.Fatal("无法打开监听目录: ", err)
+	}
+
+	server := newHTTPServer(":"+port, handler)
+	if err = server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal("文件服务器启动失败: ", err)
-	}
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-	// 获取参数
-	pathParam := r.URL.String()
-	if pathParam == "" || strings.Contains(pathParam, "./") {
-		pathParam = ""
-	}
-
-	pathParam, _ = url.QueryUnescape(pathParam)
-	pathParam = strings.Split(pathParam, "?")[0]
-
-	filePath := conf.RunDirPath + pathParam
-	oopfile := oopFile.OpenFile(filePath)
-	if !oopfile.Exits() {
-		fmt.Fprintf(w, "404 error")
-		return
-	}
-
-	if oopfile.IsDir() {
-		// 返回 html
-		w.Header().Set("Content-Type", "text/html")
-		var fileList []fileMsgVO
-		var dirList []fileMsgVO
-		for _, f := range oopfile.Children() {
-			vo := fileMsgVO{
-				FileName: f.Name(),
-				IsDir:    f.IsDir(),
-				LastMod:  f.ModTime().Format("2006-01-02 15:04"),
-			}
-			if f.IsDir() {
-				vo.FileSize = "文件夹"
-				dirList = append(dirList, vo)
-			} else {
-				vo.FileSize = utils.HumanizeFileSize(f.Size())
-				fileList = append(fileList, vo)
-			}
-		}
-
-		sort.Slice(fileList, func(i, j int) bool {
-			return strings.Compare(fileList[i].FileName, fileList[j].FileName) < 0
-		})
-		sort.Slice(dirList, func(i, j int) bool {
-			return strings.Compare(dirList[i].FileName, dirList[j].FileName) < 0
-		})
-		dirList = append(dirList, fileList...)
-		html := renderHtml(dirList)
-
-		io.WriteString(w, html)
-	} else if oopfile.IsFile() {
-		sysFile, err := os.Open(oopfile.AbsPath())
-		if err != nil {
-			http.Error(w, "Internal server error, file open error", http.StatusInternalServerError)
-			return
-		}
-		defer sysFile.Close() // 确保文件在函数结束时关闭
-
-		fileInfo, err := sysFile.Stat()
-		if err != nil {
-			http.Error(w, "Internal server error, get file msg error", http.StatusInternalServerError)
-			return
-		}
-
-		// 设置响应头
-		//w.Header().Set("Content-Disposition", "attachment; filename="+oopfile.Name())
-		http.ServeContent(w, r, fileInfo.Name(), fileInfo.ModTime(), sysFile)
 	}
 }
